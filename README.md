@@ -32,7 +32,6 @@
 - ✅ **Autenticación JWT** segura
 - ✅ **API REST completa** con documentación Swagger
 - ✅ **Auditoría completa** de todas las acciones
-- ✅ **Notificaciones automáticas**
 - ✅ **Estadísticas en tiempo real**
 
 ---
@@ -284,13 +283,6 @@ http://localhost:8080/swagger-ui/index.html
 - Reportes por usuario, técnico, período
 - Métricas de rendimiento
 
-### **✅ Notificaciones**
-
-- Sistema automático de notificaciones
-- Alertas por cambios de estado
-- Notificaciones de asignación
-- Recordatorios automáticos
-
 ---
 
 ## 🤝 Contribución
@@ -341,13 +333,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 - Posibilidad de reapertura con comentarios
 - Historial completo de cambios y asignaciones
 
-### 🔔 **Sistema de Notificaciones**
-
-- Notificaciones automáticas por cambios de estado
-- Alertas por asignación de tickets
-- Notificaciones de bloqueo y desbloqueo de usuarios
-
-### 📊 **Reportes y Estadísticas**
+###  **Reportes y Estadísticas**
 
 - Métricas de rendimiento por técnico
 - Estadísticas de tickets por estado y período
@@ -474,8 +460,7 @@ La API cuenta con **documentación automática y interactiva** generada con Swag
 | 🔧 **Técnicos** | Gestión de tickets asignados | `/api/tecnico/*` |
 | 🏢 **Trabajadores** | Creación y seguimiento | `/api/trabajador/*` |
 | 👥 **Usuarios** | Gestión de perfil personal | `/api/usuarios/*` |
-| 🔔 **Notificaciones** | Sistema de notificaciones | `/api/notificaciones/*` |
-| 📊 **Estadísticas** | Métricas del sistema | `/api/estadisticas/*` |
+|  **Estadísticas** | Métricas del sistema | `/api/estadisticas/*` |
 | 📋 **Auditoría** | Logs y seguimiento | `/api/auditoria/*` |
 
 ### 🔐 **Autenticación Rápida**
@@ -516,14 +501,7 @@ La API cuenta con **documentación automática y interactiva** generada con Swag
 | `PUT`  | `/api/tickets/{id}/resolver`        | Resolver ticket    | Técnico       |
 | `POST` | `/api/trabajador/tickets/{id}/evaluar` | Evaluar solución   | Trabajador    |
 
-### 🔔 **Notificaciones**
-
-| Método | Endpoint                                | Descripción        |
-| ------ | --------------------------------------- | ------------------ |
-| `GET`  | `/api/notificaciones?userId={id}`       | Ver notificaciones |
-| `PUT`  | `/api/notificaciones/{id}/marcar-leida` | Marcar como leída  |
-
-### 📊 **Estadísticas**
+###  **Estadísticas**
 
 | Método | Endpoint                     | Descripción          | Rol Requerido |
 | ------ | ---------------------------- | -------------------- | ------------- |
@@ -536,30 +514,34 @@ La API cuenta con **documentación automática y interactiva** generada con Swag
 
 ### 📁 Estructura del Proyecto
 
+El proyecto sigue una arquitectura **Modular Monolith** con organización **Package by Feature** y **Vertical Slices**:
+
+```
+src/main/java/com/poo/miapi/
+├── modules/           # Módulos de dominio (features)
+│   ├── auth/         # Autenticación y autorización
+│   ├── users/        # Gestión de usuarios
+│   └── ticketing/    # Gestión de tickets
+├── shared/           # Utilidades y clases comunes
+├── security/         # Configuración y utilidades de seguridad
+├── config/           # Configuración general del proyecto
+├── controller/       # Controladores REST (legacy en migración)
+├── dto/              # Data Transfer Objects
+├── model/            # Entidades JPA (legacy en migración)
+├── repository/      # Acceso a datos (legacy en migración)
+└── service/          # Lógica de negocio (legacy en migración)
 ```
 
-src/main/java/com/poo/miapi/
-├── 🎮 controller/ # Controladores REST
-│ ├── auth/ # Autenticación
-│ ├── core/ # Usuarios, Tickets
-│ ├── estadistica/ # Reportes
-│ ├── historial/ # Auditoría
-│ └── notificacion/ # Notificaciones
-├── 📊 dto/ # Data Transfer Objects
-├── 🗃️ model/ # Entidades JPA
-├── 🔧 repository/ # Acceso a datos
-├── 🛠️ service/ # Lógica de negocio
-├── 🔐 security/ # Configuración JWT
-└── ⚙️ config/ # Configuraciones
-
-````
+**Convenciones de módulos:**
+- Cada módulo en `modules/` contiene: `api/`, `controller/`, `service/`, `repository/`, `entity/`, `dto/`
+- Comunicación entre módulos solo vía interfaces públicas en `api/`
+- Ver documentación completa en `docs/engineering/backend-architecture.md`
 
 ### 🗄️ Modelo de Datos
 
 ```mermaid
 erDiagram
     USUARIO ||--o{ TICKET : crea
-    USUARIO ||--o{ NOTIFICACION : recibe
     TECNICO ||--o{ TECNICO_POR_TICKET : asignado
     TICKET ||--o{ TECNICO_POR_TICKET : historial
 
