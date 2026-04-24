@@ -1,0 +1,60 @@
+# Archivos y carpetas de build
+/target/
+/build/
+**/target/
+**/build/
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Archivos de configuración de IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache
+.apt_generated
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Visual Studio Code
+.vscode/
+
+# Archivos de entorno y configuración sensible
+.env
+*.env
+
+# Archivos temporales y de sistema
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# Salidas de pruebas y cobertura
+/surefire-reports/
+/coverage/
+**/surefire-reports/
+**/coverage/
+
+# Permitir recursos y build internos de módulos
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Documentación y archivos generados
+
+# Otros
+HELP.md
+
