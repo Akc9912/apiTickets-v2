@@ -9,9 +9,36 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ### 📚 En Desarrollo
 
-### 🐞 Fixed
-
 ## [1.0.1] - 2025-08-08
+
+### ✨ Added
+
+- **🏗️ Estructura Modular Monolith**
+  - Creación de carpetas modules/, shared/, security/, config/ en com/poo/miapi
+  - Preparación para arquitectura Package by Feature y Vertical Slices
+
+- **🔄 CI/CD Pipeline**
+  - GitHub Actions workflow para build y test automatizado
+  - Configuración con JDK 24 y Maven
+
+### 🔧 Changed
+
+- **📝 Documentación**
+  - README actualizado con nueva estructura de carpetas
+  - Eliminadas referencias a sistema de notificaciones
+  - Documentación de convenciones de módulos
+
+- **⚙️ Configuración**
+  - Mejor organización de dependencias en pom.xml con comentarios por categoría
+  - Mejor estructura de application.properties con secciones comentadas
+  - Eliminada configuración legacy de MAIL en .env.example
+
+### 🗑️ Removed
+
+- **🔔 Sistema de Notificaciones**
+  - Eliminada configuración de MAIL/Email de .env.example
+  - Eliminadas referencias a notificaciones en README.md
+  - Limpieza de código legacy relacionado con eventos/notificaciones
 
 ### 🐞 Fixed
 

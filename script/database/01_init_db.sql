@@ -2,19 +2,7 @@
 -- SCRIPT COMPLETO DE BASE DE DATOS
 -- SISTEMA DE TICKETS v1.0.0
 -- =========================================
--- 
--- Este script único crea TODO lo necesario:
--- ✅ Base de datos
--- ✅ Estructura completa
--- ✅ Datos iniciales
--- ✅ Compatible con enum Rol
--- ✅ Listo para producción
---
--- CREDENCIALES SuperAdmin (creadas por la aplicación):
--- Email: superadmin@sistema.com
--- Password: secret
--- ⚠️ CAMBIAR después del primer login
--- =========================================
+
 
 -- Crear y usar la base de datos
 CREATE DATABASE IF NOT EXISTS apiticket 
@@ -23,197 +11,96 @@ CREATE DATABASE IF NOT EXISTS apiticket
 
 USE apiticket;
 
--- Desactivar foreign key checks durante setup
-SET FOREIGN_KEY_CHECKS = 0;
-
 -- =========================================
--- LIMPIAR SI EXISTE (para re-ejecución)
+-- DOMAIN: AUTH
 -- =========================================
 
-DROP TABLE IF EXISTS auditoria;
-DROP TABLE IF EXISTS incidente_tecnico;
-DROP TABLE IF EXISTS historial_validacion;
-DROP TABLE IF EXISTS tecnico_por_ticket;
-DROP TABLE IF EXISTS notificacion;
-DROP TABLE IF EXISTS ticket;
-DROP TABLE IF EXISTS super_admin;
-DROP TABLE IF EXISTS admin;
-DROP TABLE IF EXISTS tecnico;
-DROP TABLE IF EXISTS trabajador;
-DROP TABLE IF EXISTS usuario;
-DROP TABLE IF EXISTS resumen_ticket_mensual;
+CREATE TABLE users (
+    id BINARY(16) PRIMARY KEY,
 
--- =========================================
--- TABLA PRINCIPAL DE USUARIOS
--- =========================================
-
-CREATE TABLE usuario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    tipo_usuario VARCHAR(31) NOT NULL, -- Discriminador JPA
-    nombre VARCHAR(100) NOT NULL,
-    apellido VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    cambiar_pass BOOLEAN NOT NULL DEFAULT TRUE,
-    rol ENUM('SUPER_ADMIN', 'ADMIN', 'TECNICO', 'TRABAJADOR') NOT NULL,
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-    bloqueado BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
 
--- =========================================
--- TABLAS DE ESPECIALIZACIÓN
--- =========================================
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
 
-CREATE TABLE super_admin (
-    id INT PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
-);
+    global_role ENUM('SUPER_ADMIN', 'ADMIN', 'USER') NOT NULL DEFAULT 'USER',
 
-CREATE TABLE admin (
-    id INT PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
-);
+    blocked TINYINT(1) NOT NULL DEFAULT 0,
 
-CREATE TABLE trabajador (
-    id INT PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
-);
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE tecnico (
-    id INT PRIMARY KEY,
-    fallas INT NOT NULL DEFAULT 0,
-    marcas INT NOT NULL DEFAULT 0,
-    FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
-);
+CREATE TABLE tenants (
+    id BINARY(16) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================
--- TABLA DE TICKETS
--- =========================================
+CREATE TABLE user_tenants (
+    id BINARY(16) PRIMARY KEY,
 
-CREATE TABLE ticket (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    titulo VARCHAR(255) NOT NULL,
-    descripcion TEXT NOT NULL,
-    estado ENUM('NO_ATENDIDO', 'ATENDIDO', 'RESUELTO', 'FINALIZADO', 'REABIERTO') NOT NULL DEFAULT 'NO_ATENDIDO',
-    id_creador INT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_creador) REFERENCES trabajador(id) ON DELETE SET NULL
-);
+    user_id BINARY(16) NOT NULL,
+    tenant_id BINARY(16) NOT NULL,
 
--- =========================================
--- HISTORIAL Y AUDITORÍA
--- =========================================
+    blocked TINYINT(1) NOT NULL DEFAULT 0,
 
-CREATE TABLE tecnico_por_ticket (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_ticket INT NOT NULL,
-    id_tecnico INT NOT NULL,
-    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_desasignacion TIMESTAMP NULL,
-    estado_inicial ENUM('NO_ATENDIDO', 'ATENDIDO', 'RESUELTO', 'FINALIZADO', 'REABIERTO') NOT NULL,
-    estado_final ENUM('NO_ATENDIDO', 'ATENDIDO', 'RESUELTO', 'FINALIZADO', 'REABIERTO'),
-    comentario TEXT,
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-    FOREIGN KEY (id_ticket) REFERENCES ticket(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_tecnico) REFERENCES tecnico(id) ON DELETE CASCADE
-);
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-CREATE TABLE auditoria (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario VARCHAR(100) NOT NULL,
-    accion VARCHAR(100) NOT NULL,
-    entidad VARCHAR(50) NOT NULL,
-    detalle TEXT,
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    UNIQUE KEY uk_user_tenant (user_id, tenant_id),
 
-CREATE TABLE incidente_tecnico (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_tecnico INT NOT NULL,
-    id_ticket INT NOT NULL,
-    tipo ENUM('MARCA', 'FALLA') NOT NULL,
-    motivo TEXT,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_tecnico) REFERENCES tecnico(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_ticket) REFERENCES ticket(id) ON DELETE CASCADE
-);
+    INDEX idx_ut_user (user_id),
+    INDEX idx_ut_tenant (tenant_id),
 
-CREATE TABLE historial_validacion (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario_validador INT NOT NULL,
-    id_ticket INT NOT NULL,
-    fue_aprobado BOOLEAN NOT NULL,
-    comentario TEXT,
-    fecha_validacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario_validador) REFERENCES usuario(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_ticket) REFERENCES ticket(id) ON DELETE CASCADE
-);
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================
--- SISTEMA DE NOTIFICACIONES
--- =========================================
+CREATE TABLE permissions (
+    id BINARY(16) PRIMARY KEY,
 
-CREATE TABLE notificacion (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL,
-    mensaje TEXT NOT NULL,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
-);
+    code VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(255) NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================
--- TABLA DE ESTADÍSTICAS
--- =========================================
+CREATE TABLE roles (
+    id BINARY(16) PRIMARY KEY,
 
-CREATE TABLE resumen_ticket_mensual (
-    anio INT NOT NULL,
-    mes INT NOT NULL,
-    total_creados INT NOT NULL DEFAULT 0,
-    total_resueltos INT NOT NULL DEFAULT 0,
-    total_reabiertos INT NOT NULL DEFAULT 0,
-    promedio_tiempo_resolucion DECIMAL(10,2),
-    PRIMARY KEY (anio, mes)
-);
+    tenant_id BINARY(16) NOT NULL,
 
--- =========================================
--- ÍNDICES OPTIMIZADOS
--- =========================================
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(255),
 
--- Usuario
-CREATE INDEX idx_usuario_email ON usuario(email);
-CREATE INDEX idx_usuario_rol ON usuario(rol);
-CREATE INDEX idx_usuario_activo ON usuario(activo);
-CREATE INDEX idx_usuario_tipo ON usuario(tipo_usuario);
+    is_system TINYINT(1) NOT NULL DEFAULT 0,
 
--- Ticket
-CREATE INDEX idx_ticket_estado ON ticket(estado);
-CREATE INDEX idx_ticket_creador ON ticket(id_creador);
-CREATE INDEX idx_ticket_fecha_creacion ON ticket(fecha_creacion);
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- Relaciones
-CREATE INDEX idx_tecnico_ticket ON tecnico_por_ticket(id_ticket, id_tecnico);
-CREATE INDEX idx_notificacion_usuario ON notificacion(usuario_id);
-CREATE INDEX idx_auditoria_usuario ON auditoria(usuario);
-CREATE INDEX idx_auditoria_fecha ON auditoria(fecha);
+    UNIQUE KEY uk_role_name_per_tenant (tenant_id, name),
 
--- Reactivar foreign key checks
-SET FOREIGN_KEY_CHECKS = 1;
+    INDEX idx_roles_tenant (tenant_id),
 
--- =========================================
--- DATOS INICIALES
--- =========================================
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================
--- VERIFICACIÓN FINAL
--- =========================================
+CREATE TABLE role_permissions (
+    role_id BINARY(16) NOT NULL,
+    permission_id BINARY(16) NOT NULL,
 
-SELECT 
-    'Base de datos inicializada correctamente' as status,
-    (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'apiticket') as tablas_creadas,
-    DATABASE() as base_datos_actual,
-    CURRENT_TIMESTAMP as fecha_creacion;
+    PRIMARY KEY (role_id, permission_id),
 
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    FOREIGN KEY (permission_id) REFERENCES permissions(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE user_tenant_roles (
+    user_tenant_id BINARY(16) NOT NULL,
+    role_id BINARY(16) NOT NULL,
+
+    PRIMARY KEY (user_tenant_id, role_id),
+
+    FOREIGN KEY (user_tenant_id) REFERENCES user_tenants(id),
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

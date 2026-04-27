@@ -11,6 +11,7 @@ import java.security.Key;
 import java.util.Date;
 
 import com.poo.miapi.model.core.Usuario;
+import com.poo.miapi.modules.auth.entity.User;
 
 @Service
 public class JwtService {
@@ -27,11 +28,11 @@ public class JwtService {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    public String generateToken(Usuario usuario) {
+    public String generateToken(User usuario) {
         return Jwts.builder()
                 .setSubject(usuario.getEmail())
                 .claim("id", usuario.getId())
-                .claim("rol", usuario.getTipoUsuario())
+                .claim("rol", usuario.getRole())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
