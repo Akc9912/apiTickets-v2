@@ -9,7 +9,7 @@ import com.poo.miapi.modules.auth.api.AuthApi;
 import com.poo.miapi.modules.auth.api.dto.*;
 import com.poo.miapi.modules.auth.entity.User;
 import com.poo.miapi.modules.auth.enums.GlobalRole;
-import com.poo.miapi.modules.repository.UserRepository;
+import com.poo.miapi.modules.auth.repository.UserRepository;
 import com.poo.miapi.service.security.JwtService;
 
 import lombok.AllArgsConstructor;
@@ -48,6 +48,7 @@ public class AuthServiceImpl implements AuthApi {
     }
 
     // Register
+    @SuppressWarnings("null")
     public boolean register(RegisterRequest request) {
         // Validaciones básicas de entrada
         if (request == null || request.getEmail() == null || request.getEmail().isBlank()

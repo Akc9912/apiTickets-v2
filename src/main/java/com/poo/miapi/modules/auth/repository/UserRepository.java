@@ -1,4 +1,4 @@
-package com.poo.miapi.modules.repository;
+package com.poo.miapi.modules.auth.repository;
 
 import java.util.UUID;
 

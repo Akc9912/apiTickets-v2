@@ -13,17 +13,12 @@ Establecer la base del proyecto con la estructura de carpetas para todos los mó
 
 ### Critical (P0)
 ```java
-// P0 FEATURE [config] Crear estructura de carpetas para módulos: auth, identity, tenancy, membership, authorization, ticketing (2h)
-// P0 FEATURE [config] Crear carpetas shared/, security/, config/ (1h)
-// P0 FEATURE [config] Configurar dependencias mínimas en pom.xml (Spring Boot, JPA, Security, MySQL, Lombok, Swagger) (2h)
-// P0 FEATURE [config] Configurar application.properties y perfiles (1h)
-// P0 REFACTOR [config] Eliminar código/configuración de notificaciones/eventos (2h)
-// P0 FEATURE [ci] Pipeline de build/test funcional (2h)
+
 ```
 
 ### Important (P1)
 ```java
-// P1 DOCS [config] Documentar estructura y dependencias en README.md (1h)
+
 ```
 
 ### Optional (P2/P3)
